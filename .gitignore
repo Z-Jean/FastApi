@@ -1,0 +1,24 @@
+# 后端
+backend/venv/
+backend/__pycache__/
+backend/.env
+backend/*.pyc
+
+# 前端
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+
+# 系统
+.DS_Store
+*.log
+.idea/
+.vscode/
+
+# 保留环境变量示例
+!frontend/.env.example
+!frontend/.env.production.example
+!backend/.env.example
