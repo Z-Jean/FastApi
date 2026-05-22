@@ -1,40 +1,35 @@
-#!/usr/bin/env bash
-# 在服务器上执行：安装依赖、构建前端、重启服务
-set -euo pipefail
+#!/bin/bash
+# deploy/deploy.sh — GitHub Actions 远程调用
+set -e
 
-APP_ROOT="${APP_ROOT:-/var/www/fullstack}"
-BACKEND_DIR="$APP_ROOT/backend"
-FRONTEND_DIR="$APP_ROOT/frontend"
+APP_DIR="/opt/fullstack-app"
+LOG_FILE="/var/log/fullstack-deploy.log"
 
-echo "==> [1/4] 检查环境文件"
-if [[ ! -f "$BACKEND_DIR/.env" ]]; then
-  echo "错误: 缺少 $BACKEND_DIR/.env"
-  echo "请先在服务器执行一次性初始化（见 deploy/CICD上线计划.md 阶段三）"
-  exit 1
-fi
-if [[ ! -f "$FRONTEND_DIR/.env.production" ]]; then
-  echo "错误: 缺少 $FRONTEND_DIR/.env.production"
-  exit 1
-fi
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
+}
 
-echo "==> [2/4] 部署后端"
-cd "$BACKEND_DIR"
-if [[ ! -d venv ]]; then
-  python3 -m venv venv
-fi
-# shellcheck disable=SC1091
+log "开始部署..."
+
+cd "$APP_DIR"
+git pull origin main
+log "代码更新完成"
+
+# 后端依赖
+cd backend
 source venv/bin/activate
-pip install --upgrade pip -q
 pip install -r requirements.txt -q
+log "后端依赖安装完成"
 
-echo "==> [3/4] 构建前端"
-cd "$FRONTEND_DIR"
-npm ci
+# 前端构建
+cd ../frontend
+npm install --silent
 npm run build
+log "前端构建完成"
 
-echo "==> [4/4] 重启服务"
-systemctl restart fullstack-api
-systemctl restart fullstack-web
-systemctl is-active fullstack-api fullstack-web nginx
+# 重启服务
+systemctl restart fullstack-backend
+systemctl reload nginx
+log "服务重启完成"
 
-echo "==> 部署完成: $(date -Iseconds)"
+log "部署成功完成"
