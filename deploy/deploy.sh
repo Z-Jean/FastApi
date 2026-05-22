@@ -12,6 +12,7 @@ log() {
 log "开始部署..."
 
 cd "$APP_DIR"
+git remote set-url origin git@github.com:Z-Jean/FastApi.git
 git pull origin main
 log "代码更新完成"
 
