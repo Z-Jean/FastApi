@@ -22,13 +22,32 @@ systemctl start mysql
 systemctl enable mysql
 
 echo ""
-echo ">>> 请设置 MySQL root 密码 <<<"
-mysql -u root <<EOF
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${DB_PASSWORD:-root123}';
-FLUSH PRIVILEGES;
+echo ">>> 配置 MySQL <<<"
+if mysql -u root <<EOF 2>/dev/null
 CREATE DATABASE IF NOT EXISTS fullstack_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 EOF
-echo "MySQL 安装完成，数据库 fullstack_db 已创建"
+then
+    echo "使用 sudo mysql 连接成功，设置密码..."
+    mysql -u root <<EOF
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${DB_PASSWORD:-root123}';
+FLUSH PRIVILEGES;
+EOF
+    echo "MySQL root 密码已设置"
+elif mysql -u root -p"${DB_PASSWORD:-root123}" <<EOF 2>/dev/null
+SELECT 1;
+EOF
+then
+    echo "MySQL root 已有密码，跳过密码设置"
+    mysql -u root -p"${DB_PASSWORD:-root123}" <<EOF
+CREATE DATABASE IF NOT EXISTS fullstack_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+EOF
+else
+    echo "无法连接 MySQL，请手动执行:"
+    echo "  mysql -u root -p"
+    echo "  ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '你的密码';"
+    echo "  CREATE DATABASE IF NOT EXISTS fullstack_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+fi
+echo "MySQL 配置完成"
 
 # ─────────────────────────────────────
 # 3. Python 3 + pip + 虚拟环境
@@ -56,13 +75,13 @@ systemctl enable nginx
 # 6. 克隆项目
 # ─────────────────────────────────────
 echo "[6/8] 克隆项目代码..."
-APP_DIR="/opt/fullstack-app"
+APP_DIR="/opt/fullstack-app/FastApi"
 if [ -d "$APP_DIR" ]; then
     echo "项目目录已存在，跳过克隆"
 else
-    echo "请手动克隆项目到 $APP_DIR"
-    echo "  git clone <你的仓库地址> $APP_DIR"
-    mkdir -p "$APP_DIR"
+    mkdir -p /opt/fullstack-app
+    git clone git@github.com:Z-Jean/FastApi.git "$APP_DIR"
+    echo "项目已克隆到 $APP_DIR"
 fi
 
 # ─────────────────────────────────────
@@ -121,6 +140,6 @@ echo "  文档: http://182.92.143.247/docs"
 echo "=========================================="
 echo ""
 echo "请检查："
-echo "  1. 编辑 /opt/fullstack-app/backend/.env 填入正确的 DB_PASSWORD"
+echo "  1. 编辑 /opt/fullstack-app/FastApi/backend/.env 填入正确的 DB_PASSWORD"
 echo "  2. systemctl status fullstack-backend 确认服务运行"
 echo "  3. curl http://182.92.143.247/api/ 确认后端响应"

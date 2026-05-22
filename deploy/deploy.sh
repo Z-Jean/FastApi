@@ -2,7 +2,7 @@
 # deploy/deploy.sh — GitHub Actions 远程调用
 set -e
 
-APP_DIR="/opt/fullstack-app"
+APP_DIR="/opt/fullstack-app/FastApi"
 LOG_FILE="/var/log/fullstack-deploy.log"
 
 log() {
