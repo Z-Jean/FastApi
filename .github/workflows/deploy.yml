@@ -16,4 +16,4 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script_stop: true
           script: |
-            bash /opt/fullstack-app/deploy/deploy.sh
+            bash /opt/fullstack-app/FastApi/deploy/deploy.sh
