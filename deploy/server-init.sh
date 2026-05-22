@@ -1,72 +1,126 @@
-#!/usr/bin/env bash
-# 服务器一次性初始化（阶段二环境已装好后执行一次）
-# 用法: sudo bash /var/www/fullstack/deploy/server-init.sh
-set -euo pipefail
+#!/bin/bash
+# deploy/server-init.sh — 服务器首次初始化（一次性执行）
+set -e
 
-APP_ROOT="${APP_ROOT:-/var/www/fullstack}"
+echo "=========================================="
+echo "  全栈项目服务器初始化"
+echo "=========================================="
 
-echo "==> 创建目录"
-mkdir -p "$APP_ROOT"/{backend,frontend,deploy}
+# ─────────────────────────────────────
+# 1. 系统更新 + 基础工具
+# ─────────────────────────────────────
+echo "[1/8] 安装基础工具..."
+apt update && apt upgrade -y
+apt install -y git curl wget build-essential software-properties-common ufw
 
-echo "==> 配置 Nginx"
-cp "$APP_ROOT/deploy/nginx-fullstack.conf" /etc/nginx/sites-available/fullstack
-ln -sf /etc/nginx/sites-available/fullstack /etc/nginx/sites-enabled/fullstack
-rm -f /etc/nginx/sites-enabled/default
-nginx -t
-systemctl enable nginx
-systemctl reload nginx
-
-echo "==> 配置 systemd: fullstack-api"
-cat > /etc/systemd/system/fullstack-api.service << EOF
-[Unit]
-Description=Fullstack FastAPI
-After=network.target mysql.service
-
-[Service]
-WorkingDirectory=$APP_ROOT/backend
-Environment="PATH=$APP_ROOT/backend/venv/bin"
-ExecStart=$APP_ROOT/backend/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-echo "==> 配置 systemd: fullstack-web"
-cat > /etc/systemd/system/fullstack-web.service << EOF
-[Unit]
-Description=Fullstack Next.js
-After=fullstack-api.service
-
-[Service]
-WorkingDirectory=$APP_ROOT/frontend
-Environment=NODE_ENV=production
-Environment=PORT=3000
-ExecStart=/usr/bin/npx next start -p 3000 -H 127.0.0.1
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-systemctl daemon-reload
-systemctl enable fullstack-api fullstack-web
-
-echo "==> 环境文件（若不存在则从模板复制）"
-if [[ ! -f "$APP_ROOT/backend/.env" ]]; then
-  cp "$APP_ROOT/deploy/backend.env" "$APP_ROOT/backend/.env"
-  echo "已创建 $APP_ROOT/backend/.env — 请编辑 DB_PASSWORD 和 JWT_SECRET_KEY"
-fi
-if [[ ! -f "$APP_ROOT/frontend/.env.production" ]]; then
-  cp "$APP_ROOT/deploy/frontend.env.production" "$APP_ROOT/frontend/.env.production"
-fi
-
-chmod +x "$APP_ROOT/deploy/deploy.sh" 2>/dev/null || true
+# ─────────────────────────────────────
+# 2. MySQL 8.0
+# ─────────────────────────────────────
+echo "[2/8] 安装 MySQL..."
+apt install -y mysql-server
+systemctl start mysql
+systemctl enable mysql
 
 echo ""
-echo "初始化完成。接下来请手动："
-echo "  1. 配置 MySQL（见 CICD上线计划.md 阶段三）"
-echo "  2. vim $APP_ROOT/backend/.env"
-echo "  3. 首次部署由 GitHub Actions 触发，或手动: bash $APP_ROOT/deploy/deploy.sh"
+echo ">>> 请设置 MySQL root 密码 <<<"
+mysql -u root <<EOF
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${DB_PASSWORD:-root123}';
+FLUSH PRIVILEGES;
+CREATE DATABASE IF NOT EXISTS fullstack_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+EOF
+echo "MySQL 安装完成，数据库 fullstack_db 已创建"
+
+# ─────────────────────────────────────
+# 3. Python 3 + pip + 虚拟环境
+# ─────────────────────────────────────
+echo "[3/8] 安装 Python3..."
+apt install -y python3 python3-pip python3-venv
+
+# ─────────────────────────────────────
+# 4. Node.js 20 LTS
+# ─────────────────────────────────────
+echo "[4/8] 安装 Node.js 20..."
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt install -y nodejs
+echo "Node.js $(node -v) 安装完成"
+
+# ─────────────────────────────────────
+# 5. Nginx
+# ─────────────────────────────────────
+echo "[5/8] 安装 Nginx..."
+apt install -y nginx
+systemctl start nginx
+systemctl enable nginx
+
+# ─────────────────────────────────────
+# 6. 克隆项目
+# ─────────────────────────────────────
+echo "[6/8] 克隆项目代码..."
+APP_DIR="/opt/fullstack-app"
+if [ -d "$APP_DIR" ]; then
+    echo "项目目录已存在，跳过克隆"
+else
+    echo "请手动克隆项目到 $APP_DIR"
+    echo "  git clone <你的仓库地址> $APP_DIR"
+    mkdir -p "$APP_DIR"
+fi
+
+# ─────────────────────────────────────
+# 7. 后端环境
+# ─────────────────────────────────────
+echo "[7/8] 配置后端环境..."
+cd "$APP_DIR/backend"
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt -q
+
+# 生成 .env 模板（如果不存在）
+if [ ! -f .env ]; then
+    cp .env.example .env
+    JWT_SECRET=$(openssl rand -hex 32)
+    sed -i "s/JWT_SECRET_KEY=.*/JWT_SECRET_KEY=$JWT_SECRET/" .env
+    sed -i "s/DEBUG=True/DEBUG=False/" .env
+    sed -i "s|CORS_ORIGINS=.*|CORS_ORIGINS=http://182.92.143.247|" .env
+    echo ""
+    echo ">>> 已生成 backend/.env，请检查并修改 DB_PASSWORD <<<"
+    echo ""
+fi
+
+# ─────────────────────────────────────
+# 8. 前端构建 + Nginx + systemd
+# ─────────────────────────────────────
+echo "[8/8] 构建前端并配置服务..."
+cd "$APP_DIR/frontend"
+npm install --silent
+npm run build
+
+# Nginx 配置
+cp "$APP_DIR/deploy/nginx.conf" /etc/nginx/sites-available/fullstack
+ln -sf /etc/nginx/sites-available/fullstack /etc/nginx/sites-enabled/fullstack
+rm -f /etc/nginx/sites-enabled/default
+nginx -t && systemctl reload nginx
+
+# systemd 服务
+cp "$APP_DIR/deploy/fullstack-backend.service" /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable fullstack-backend
+systemctl start fullstack-backend
+
+# 防火墙
+ufw allow 22/tcp
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw --force enable
+
+echo ""
+echo "=========================================="
+echo "  初始化完成！"
+echo "  访问: http://182.92.143.247"
+echo "  API:  http://182.92.143.247/api/"
+echo "  文档: http://182.92.143.247/docs"
+echo "=========================================="
+echo ""
+echo "请检查："
+echo "  1. 编辑 /opt/fullstack-app/backend/.env 填入正确的 DB_PASSWORD"
+echo "  2. systemctl status fullstack-backend 确认服务运行"
+echo "  3. curl http://182.92.143.247/api/ 确认后端响应"
