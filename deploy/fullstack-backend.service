@@ -1,0 +1,14 @@
+[Unit]
+Description=Fullstack Backend (uvicorn)
+After=network.target mysql.service
+
+[Service]
+User=root
+WorkingDirectory=/opt/fullstack-app/backend
+ExecStart=/opt/fullstack-app/backend/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=5
+EnvironmentFile=/opt/fullstack-app/backend/.env
+
+[Install]
+WantedBy=multi-user.target
