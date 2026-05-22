@@ -50,7 +50,7 @@ export default function Header() {
 
           {/* 右侧用户操作 */}
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">👤 管理员</span>
+            <span className="text-sm text-gray-600">👤 admin</span>
             <button
               onClick={handleLogout}
               className="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
