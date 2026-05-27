@@ -31,8 +31,8 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
-    swagger_js_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js",
-    swagger_css_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css",
+    swagger_js_url="https://cdn.bootcdn.net/ajax/libs/swagger-ui/5.11.0/swagger-ui-bundle.js",
+    swagger_css_url="https://cdn.bootcdn.net/ajax/libs/swagger-ui/5.11.0/swagger-ui.css",
 )
 
 # ─────────────────────────────────────────────
