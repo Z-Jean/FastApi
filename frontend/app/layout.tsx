@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "全栈管理系统",
+  title: "FastAPI全栈系统",
   description: "基于 Next.js + FastAPI + MySQL 的企业管理系统",
 };
 
