@@ -6,7 +6,7 @@ import axios from "axios";
 
 // 创建 axios 实例（生产环境通过 NEXT_PUBLIC_API_URL 配置，见 .env.production）
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

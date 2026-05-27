@@ -45,7 +45,7 @@ export default function DashboardPage() {
           </Link>
 
           {/* API 文档 */}
-          <a href="http://localhost:8000/docs" target="_blank" className="card hover:shadow-lg transition-shadow">
+          <a href="/docs" target="_blank" className="card hover:shadow-lg transition-shadow">
             <div className="text-4xl mb-3">📖</div>
             <h3 className="text-lg font-semibold text-gray-900">API 文档</h3>
             <p className="text-gray-500 text-sm mt-1">查看接口文档</p>
