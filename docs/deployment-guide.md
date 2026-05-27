@@ -20,26 +20,31 @@
 
 ## 二、准备阿里云服务器
 
-### 2.1 SSH 密钥（如果还没有）
+### 2.1 SSH 密钥
 
-在你本地电脑生成 SSH 密钥对（如果已有可跳过）：
+你需要一对能登录阿里云服务器的 SSH 密钥。**注意：这和 GitHub 的 SSH 密钥是分开的。**
+
+- **GitHub 密钥**（如 `~/.ssh/id_ed25519`）— 用于 git push/pull，已经配好了
+- **服务器密钥** — 用于 SSH 登录阿里云，下面来配置
+
+**如果已经有能登录服务器的密钥**，跳到 2.2。
+
+**如果没有**，生成一对新密钥：
 
 ```bash
-ssh-keygen -t ed25519 -C "deploy-key"
+ssh-keygen -t ed25519 -C "server-deploy-key" -f ~/.ssh/server_deploy_key
 ```
 
-一路回车，默认生成在 `~/.ssh/id_ed25519`。
-
-把公钥复制到服务器：
+一路回车。然后把公钥复制到服务器：
 
 ```bash
-ssh-copy-id root@你的服务器IP
+ssh-copy-id -i ~/.ssh/server_deploy_key root@你的服务器IP
 ```
 
 验证能免密登录：
 
 ```bash
-ssh root@你的服务器IP "echo ok"
+ssh -i ~/.ssh/server_deploy_key root@你的服务器IP "echo ok"
 ```
 
 ### 2.2 配置 Docker 镜像加速
@@ -87,16 +92,22 @@ mkdir -p /opt/fullstack-app/nginx
 | `DOCKERHUB_TOKEN` | 步骤 1.2 创建的 Token | 不是密码 |
 | `SERVER_HOST` | 阿里云服务器公网 IP | 如 `47.100.xxx.xxx` |
 | `SERVER_USER` | SSH 用户名 | 通常是 `root` |
-| `SERVER_SSH_KEY` | 步骤 2.1 的私钥内容 | 整个文件内容，包括 BEGIN/END 行 |
+| `SERVER_SSH_KEY` | **服务器** SSH 私钥（不是 GitHub 的！） | 整个文件内容，包括 BEGIN/END 行 |
 
-**获取私钥内容：**
+**获取服务器 SSH 私钥内容（注意不是 GitHub 的密钥）：**
 
 ```bash
-# 本地执行
-cat ~/.ssh/id_ed25519
+# 如果步骤 2.1 生成了新密钥：
+cat ~/.ssh/server_deploy_key
+
+# 如果你用的是已有的其他密钥（如 id_rsa），替换成对应文件名
 ```
 
 复制全部输出（包括 `-----BEGIN OPENSSH PRIVATE KEY-----` 到 `-----END OPENSSH PRIVATE KEY-----`）。
+
+> **区分两个密钥：**
+> - GitHub 密钥（如 `id_ed25519`）= git push/pull 用的，**不需要**放进 Secrets
+> - 服务器密钥（如 `server_deploy_key`）= SSH 登录阿里云用的，**这个**放进 `SERVER_SSH_KEY`
 
 ---
 
