@@ -4,8 +4,8 @@ FastAPI 应用入口 - main.py
 """
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.exceptions import RequestValidationError
-from sqlalchemy.exc import SQLAlchemyError
+from fastapi.exceptions import RequestValidationError # 导入请求验证异常类
+from sqlalchemy.exc import SQLAlchemyError # 导入SQLAlchemy异常类
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.config import settings
@@ -30,7 +30,9 @@ app = FastAPI(
     description="Next.js + FastAPI + MySQL 企业级全栈项目",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    swagger_js_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js",
+    swagger_css_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css",
 )
 
 # ─────────────────────────────────────────────
