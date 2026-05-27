@@ -19,7 +19,7 @@ services:
       retries: 5
 
   backend:
-    image: registry.cn-beijing.aliyuncs.com/zj2001/fullstack-backend:latest
+    image: crpi-f0yn4cwshekeq21g.cn-beijing.personal.cr.aliyuncs.com/zj2001/fullstack-backend:latest
     container_name: fullstack-backend
     restart: unless-stopped
     env_file:
@@ -31,7 +31,7 @@ services:
       - app-network
 
   frontend:
-    image: registry.cn-beijing.aliyuncs.com/zj2001/fullstack-frontend:latest
+    image: crpi-f0yn4cwshekeq21g.cn-beijing.personal.cr.aliyuncs.com/zj2001/fullstack-frontend:latest
     container_name: fullstack-frontend
     restart: unless-stopped
     env_file:

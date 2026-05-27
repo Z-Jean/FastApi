@@ -15,7 +15,7 @@ jobs:
       - name: Login to Alibaba Cloud ACR
         uses: docker/login-action@v3
         with:
-          registry: registry.cn-beijing.aliyuncs.com
+          registry: crpi-f0yn4cwshekeq21g.cn-beijing.personal.cr.aliyuncs.com
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
@@ -24,14 +24,14 @@ jobs:
         with:
           context: ./backend
           push: true
-          tags: registry.cn-beijing.aliyuncs.com/zj2001/fullstack-backend:latest
+          tags: crpi-f0yn4cwshekeq21g.cn-beijing.personal.cr.aliyuncs.com/zj2001/fullstack-backend:latest
 
       - name: Build and push frontend image
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
           push: true
-          tags: registry.cn-beijing.aliyuncs.com/zj2001/fullstack-frontend:latest
+          tags: crpi-f0yn4cwshekeq21g.cn-beijing.personal.cr.aliyuncs.com/zj2001/fullstack-frontend:latest
 
       - name: Deploy to server
         uses: appleboy/ssh-action@v1
