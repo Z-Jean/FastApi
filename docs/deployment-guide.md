@@ -97,10 +97,8 @@ mkdir -p /opt/fullstack-app/nginx
 **获取服务器 SSH 私钥内容（注意不是 GitHub 的密钥）：**
 
 ```bash
-# 如果步骤 2.1 生成了新密钥：
-cat ~/.ssh/server_deploy_key
-
-# 如果你用的是已有的其他密钥（如 id_rsa），替换成对应文件名
+# 查看你的服务器 SSH 私钥（替换成你实际的文件名）
+cat ~/.ssh/github_deploy_ed25519
 ```
 
 复制全部输出（包括 `-----BEGIN OPENSSH PRIVATE KEY-----` 到 `-----END OPENSSH PRIVATE KEY-----`）。
