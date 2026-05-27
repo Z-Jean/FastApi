@@ -5,7 +5,10 @@ DEPLOY_DIR="/opt/fullstack-app"
 
 cd "$DEPLOY_DIR"
 
-echo "=== Pulling latest images ==="
+echo "=== Login to ACR ==="
+docker login --username=${ACR_USERNAME} --password=${ACR_PASSWORD} registry.cn-beijing.aliyuncs.com
+
+echo "=== Pulling images ==="
 docker compose pull
 
 echo "=== Starting containers ==="
