@@ -13,7 +13,7 @@ from app.core.response import json_error_response
 from app.database import engine, SessionLocal
 from app.models import User, Category, Admin, Product  # 触发所有表创建
 from app.middleware.logging import LoggingMiddleware
-from app.routers import user, auth, category, product
+from app.routers import user, auth, category, product, chat
 from app.services.auth import AuthService
 
 # ─────────────────────────────────────────────
@@ -99,6 +99,7 @@ app.include_router(auth.router)
 app.include_router(user.router)
 app.include_router(category.router)
 app.include_router(product.router)
+app.include_router(chat.router)
 
 
 # ─────────────────────────────────────────────
