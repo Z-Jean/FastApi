@@ -4,12 +4,19 @@
 import os
 from openai import OpenAI
 
-client = OpenAI(
-    api_key=os.getenv("MIMO_API_KEY"),
-    base_url=os.getenv("MIMO_BASE_URL", "https://token-plan-cn.xiaomimimo.com/v1"),
-)
-
 SYSTEM_PROMPT = "我给你的别名是'米兔'。回答用中文，清晰简洁。思考过程请用<thinking>标签包裹，不要省略思考过程。"
+
+_client: OpenAI | None = None
+
+
+def _get_client() -> OpenAI:
+    global _client
+    if _client is None:
+        _client = OpenAI(
+            api_key=os.getenv("MIMO_API_KEY"),
+            base_url=os.getenv("MIMO_BASE_URL", "https://token-plan-cn.xiaomimimo.com/v1"),
+        )
+    return _client
 
 
 def stream_chat(message: str, history: list[dict] | None = None):
@@ -19,6 +26,7 @@ def stream_chat(message: str, history: list[dict] | None = None):
     :param history: 可选的历史消息列表 [{"role": "user/assistant", "content": "..."}]
     :return: 生成器，每次 yield 一个 chunk 文本
     """
+    client = _get_client()
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     if history:
         messages.extend(history)
