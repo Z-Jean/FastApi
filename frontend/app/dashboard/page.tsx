@@ -22,7 +22,7 @@ export default function DashboardPage() {
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">欢迎使用全栈管理系统</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           {/* 用户管理 */}
           <Link href="/users" className="card hover:shadow-lg transition-shadow">
             <div className="text-4xl mb-3">👥</div>
@@ -50,6 +50,13 @@ export default function DashboardPage() {
             <h3 className="text-lg font-semibold text-gray-900">API 文档</h3>
             <p className="text-gray-500 text-sm mt-1">查看接口文档</p>
           </a>
+
+          {/* 米兔聊天 */}
+          <Link href="/chat" className="card hover:shadow-lg transition-shadow">
+            <div className="text-4xl mb-3">🤖</div>
+            <h3 className="text-lg font-semibold text-gray-900">米兔聊天</h3>
+            <p className="text-gray-500 text-sm mt-1">AI 智能助手</p>
+          </Link>
         </div>
       </main>
     </div>

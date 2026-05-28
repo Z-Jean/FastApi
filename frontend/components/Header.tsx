@@ -45,6 +45,12 @@ export default function Header() {
               >
                 商品管理
               </Link>
+              <Link
+                href="/chat"
+                className="text-gray-600 hover:text-blue-600 font-medium"
+              >
+                米兔聊天
+              </Link>
             </nav>
           </div>
 
